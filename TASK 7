@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback Form</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+        }
+        .container {
+            width: 350px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            margin-top: 50px;
+            border-radius: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: green;
+            color: white;
+            border: none;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+
+    <script>
+        // Reusable Validation Function
+        function validateField(field, type) {
+            let value = field.value;
+
+            if (type === "text" && value.length < 3) {
+                field.style.border = "2px solid red";
+            } else if (type === "email" && !value.includes("@")) {
+                field.style.border = "2px solid red";
+            } else {
+                field.style.border = "2px solid green";
+            }
+        }
+
+        // Double Click Submit Confirmation
+        function confirmSubmit() {
+            alert("Form Submitted Successfully!");
+        }
+    </script>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Feedback Form</h2>
+
+    <form>
+        <!-- Name -->
+        <input type="text" placeholder="Name"
+            onkeyup="validateField(this, 'text')"
+            onmouseover="this.style.background='lightyellow'"
+            onmouseout="this.style.background='white'">
+
+        <!-- Email -->
+        <input type="email" placeholder="Email"
+            onkeyup="validateField(this, 'email')"
+            onmouseover="this.style.background='lightyellow'"
+            onmouseout="this.style.background='white'">
+
+        <!-- Feedback -->
+        <textarea placeholder="Your Feedback"
+            onmouseover="this.style.background='lightyellow'"
+            onmouseout="this.style.background='white'"></textarea>
+
+        <!-- Submit -->
+        <button type="button" ondblclick="confirmSubmit()">
+            Double Click to Submit
+        </button>
+    </form>
+
+    <div class="error" id="error"></div>
+</div>
+
+</body>
+</html>
