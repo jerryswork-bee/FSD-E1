@@ -1,0 +1,63 @@
+package com.example.microservices;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.*;
+
+
+@SpringBootApplication
+public class MicroserviceApp {
+    public static void main(String[] args) {
+        SpringApplication.run(MicroserviceApp.class, args);
+    }
+}
+
+@RestController
+@RequestMapping("/students")
+class StudentService {
+
+    private static List<Map<String, String>> students = new ArrayList<>();
+
+   
+    @PostMapping
+    public String addStudent(@RequestBody Map<String, String> s) {
+        students.add(s);
+        return "Student Added";
+    }
+
+    @GetMapping
+    public List<Map<String, String>> getStudents() {
+        return students;
+    }
+
+    @GetMapping("/with-courses")
+    public String getStudentsWithCourses() {
+        RestTemplate rest = new RestTemplate();
+
+        String courses = rest.getForObject(
+                "http://localhost:8080/courses", String.class);
+
+        return "Students: " + students + " | Courses: " + courses;
+    }
+}
+
+@RestController
+@RequestMapping("/courses")
+class CourseService {
+
+    private static List<Map<String, String>> courses = new ArrayList<>();
+
+    @PostMapping
+    public String addCourse(@RequestBody Map<String, String> c) {
+        courses.add(c);
+        return "Course Added";
+    }
+
+    @GetMapping
+    public List<Map<String, String>> getCourses() {
+        return courses;
+    }
+}
