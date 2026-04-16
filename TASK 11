@@ -1,0 +1,93 @@
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import jakarta.persistence.*;
+import java.util.List;
+
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+
+@Entity
+@Table(name = "students")
+class Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column
+    private String name;
+
+    @Column
+    private String department;
+
+    @Column
+    private int age;
+
+    public Student() {}
+
+    public Student(String name, String department, int age) {
+        this.name = name;
+        this.department = department;
+        this.age = age;
+    }
+
+   
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public String getDepartment() { return department; }
+    public int getAge() { return age; }
+
+    public void setName(String name) { this.name = name; }
+    public void setDepartment(String department) { this.department = department; }
+    public void setAge(int age) { this.age = age; }
+}
+
+interface StudentRepository extends JpaRepository<Student, Integer> {
+
+    // Custom Query Methods
+    List<Student> findByDepartment(String department);
+
+    List<Student> findByAgeGreaterThan(int age);
+}
+
+@RestController
+@RequestMapping("/students")
+class StudentController {
+
+    @Autowired
+    private StudentRepository repo;
+
+    @GetMapping("/sort")
+    public List<Student> getSorted() {
+        return repo.findAll(Sort.by("name").ascending());
+    }
+
+  
+    @GetMapping("/department/{dept}")
+    public List<Student> getByDept(@PathVariable String dept) {
+        return repo.findByDepartment(dept);
+    }
+
+    @GetMapping("/age/{age}")
+    public List<Student> getByAge(@PathVariable int age) {
+        return repo.findByAgeGreaterThan(age);
+    }
+
+    @GetMapping("/page/{pageNo}")
+    public List<Student> getPage(@PathVariable int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo, 3);
+        Page<Student> page = repo.findAll(pageable);
+        return page.getContent();
+    }
+}
