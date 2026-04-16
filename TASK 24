@@ -1,0 +1,219 @@
+
+Feature:
+"User Management REST API deployed on cloud with security"
+
+Stack:
+- Spring Boot REST API
+- AWS deployment (EC2 + Security Group)
+- Basic authentication
+- CI-ready structure
+
+
+
+PROMPT v1:
+"Create a Spring Boot REST API for user management with
+GET, POST endpoints and deploy it to AWS."
+
+
+OUTPUT v1 (AI RESULT - BASIC):
+
+@RestController
+public class UserController {
+
+    @GetMapping("/users")
+    public String getUsers() {
+        return "All users";
+    }
+
+    @PostMapping("/users")
+    public String addUser() {
+        return "User added";
+    }
+}
+
+AWS Steps:
+- Launch EC2
+- Install Java
+- Run jar file
+
+EVALUATION v1:
+✔ Simple working API
+✖ No structure (no service/repo layers)
+✖ No security
+✖ No database
+✖ Weak cloud configuration
+
+
+
+PROMPT v2:
+"Create production-ready Spring Boot microservice with:
+- Controller, Service, Repository layers
+- REST APIs for user CRUD
+- Use in-memory database
+- Include exception handling
+Also provide AWS deployment steps."
+
+
+
+OUTPUT v2:
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    private final UserService service;
+
+    public UserController(UserService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable int id) {
+        return service.getUser(id);
+    }
+
+    @PostMapping
+    public User createUser(@RequestBody User user) {
+        return service.createUser(user);
+    }
+}
+
+
+SERVICE LAYER:
+@Service
+public class UserService {
+    private Map<Integer, User> db = new HashMap<>();
+}
+
+AWS Steps:
+- EC2 setup
+- Install Java 17
+- Run JAR
+
+
+EVALUATION v2:
+✔ Layered architecture added
+✔ Better structure
+✔ Still missing:
+  - Security
+  - Docker
+  - CI/CD
+  - API validation
+
+
+PROMPT v3:
+"You are a cloud architect and senior Spring Boot engineer.
+
+Build a production-ready User Management microservice with:
+- Spring Boot REST API (CRUD)
+- Service + Repository layers
+- Input validation
+- Global exception handling
+- Spring Security (Basic Auth)
+- Dockerfile
+- AWS EC2 deployment steps
+- Security group configuration (ports 22, 8080, 80)
+- Scalable architecture design notes"
+
+
+OUTPUT v3 (FINAL QUALITY):
+
+CONTROLLER:
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    private final UserService service;
+
+    @PostMapping
+    public ResponseEntity<User> create(@Valid @RequestBody User user) {
+        return ResponseEntity.ok(service.createUser(user));
+    }
+}
+
+
+SECURITY CONFIG:
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/users/**").authenticated()
+                .anyRequest().permitAll()
+            )
+            .httpBasic();
+        return http.build();
+    }
+}
+
+
+DOCKERFILE:
+FROM openjdk:17
+COPY target/app.jar app.jar
+ENTRYPOINT ["java","-jar","app.jar"]
+
+
+AWS DEPLOYMENT:
+1. Launch EC2 (t2.micro)
+2. Open ports: 22, 80, 8080
+3. Install Java + Docker
+4. Run container:
+   docker run -p 8080:8080 app
+
+
+ARCHITECTURE NOTES:
+- Stateless REST service
+- Can scale horizontally using load balancer
+- Docker enables portability
+
+
+EVALUATION v3:
+✔ Production-ready structure
+✔ Security added
+✔ Containerized deployment
+✔ Scalable architecture
+✔ Cloud-ready design
+
+
+
+IMPROVEMENT OVER VERSIONS:
+
+v1 → v2:
+✔ Added architecture layers
+✔ Improved maintainability
+✔ Introduced service separation
+
+v2 → v3:
+✔ Security added (major improvement)
+✔ Docker containerization
+✔ Cloud deployment completeness
+✔ Scalability considerations
+
+RESULT:
+
+ACCURACY:
+- v1: Low
+- v2: Medium
+- v3: High
+
+SCALABILITY:
+- v1: Poor
+- v2: Medium
+- v3: High
+
+REAL-WORLD USABILITY:
+- v1: Prototype only
+- v2: Development ready
+- v3: Production deployable
+
+
+
+Vibe Coding with iterative prompt engineering:
+
+✔ Transforms basic code → production system
+✔ Adds security, scalability, deployment
+✔ Reduces development time significantly
+✔ Requires refinement for real-world reliability
