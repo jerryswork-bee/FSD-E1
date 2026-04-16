@@ -1,0 +1,100 @@
+package com.example.eureka;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
+
+
+@SpringBootApplication
+public class EurekaSimulationApp {
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaSimulationApp.class, args);
+    }
+}
+
+
+
+class ServiceRegistry {
+    private static Map<String, String> services = new HashMap<>();
+
+    public static void register(String name, String url) {
+        services.put(name, url);
+    }
+
+    public static String discover(String name) {
+        return services.get(name);
+    }
+
+    public static Map<String, String> getAll() {
+        return services;
+    }
+}
+
+
+
+@RestController
+@RequestMapping("/students")
+class StudentService {
+
+    static {
+
+
+        ServiceRegistry.register("student-service", "http://localhost:8080/students");
+    }
+
+    private static List<String> students = new ArrayList<>();
+
+    @PostMapping
+    public String addStudent(@RequestBody String name) {
+        students.add(name);
+        return "Student Added";
+    }
+
+    @GetMapping
+    public List<String> getStudents() {
+        return students;
+    }
+
+    
+    @GetMapping("/courses")
+    public String getCourses() {
+        String serviceUrl = ServiceRegistry.discover("course-service");
+        return "Calling Course Service at: " + serviceUrl;
+    }
+}
+
+
+@RestController
+@RequestMapping("/courses")
+class CourseService {
+
+    static {
+
+
+        ServiceRegistry.register("course-service", "http://localhost:8080/courses");
+    }
+
+    private static List<String> courses = new ArrayList<>();
+
+    @PostMapping
+    public String addCourse(@RequestBody String name) {
+        courses.add(name);
+        return "Course Added";
+    }
+
+    @GetMapping
+    public List<String> getCourses() {
+        return courses;
+    }
+}
+
+@RestController
+@RequestMapping("/registry")
+class RegistryController {
+
+    @GetMapping
+    public Map<String, String> showServices() {
+        return ServiceRegistry.getAll();
+    }
+}
