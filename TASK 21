@@ -1,0 +1,84 @@
+
+
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = "SampleSpringApp"
+        BUILD_DIR = "target"
+    }
+    triggers {
+        pollSCM('* * * * *') // checks Git every minute (for demo)
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                echo "Cloning repository..."
+                git branch: 'main',
+                    url: 'https://github.com/your-username/sample-repo.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building application..."
+                sh 'mvn clean compile'
+            }
+        }
+
+ 
+        stage('Test') {
+            steps {
+                echo "Running unit tests..."
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo "Packaging application..."
+                sh 'mvn package -DskipTests'
+            }
+        }
+
+
+        stage('Archive Artifact') {
+            steps {
+                echo "Archiving JAR file..."
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+
+ 
+        stage('Deploy') {
+            steps {
+                echo "Deploying application to server..."
+
+                // Simulated deployment (can be replaced with EC2/Docker/K8s)
+                sh '''
+                echo "Stopping old application..."
+                echo "Copying new build..."
+                echo "Starting application..."
+                java -jar target/*.jar &
+                '''
+            }
+        }
+    }
+
+   
+    post {
+        success {
+            echo "CI/CD Pipeline SUCCESS ✅"
+        }
+
+        failure {
+            echo "CI/CD Pipeline FAILED ❌"
+        }
+
+        always {
+            echo "Pipeline execution completed."
+        }
+    }
+}
