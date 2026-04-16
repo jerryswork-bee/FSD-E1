@@ -1,13 +1,84 @@
-CREATE DATABASE bank_db;
-USE bank_db;
+<?php
+$conn = new mysqli("localhost", "root", "", "bank_db");
 
-CREATE TABLE accounts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100),
-    balance INT
-);
+$message = "";
 
--- Sample Data
-INSERT INTO accounts (name, balance) VALUES
-('User', 10000),
-('Merchant', 5000);
+if (isset($_POST['pay'])) {
+    $amount = $_POST['amount'];
+
+    $conn->begin_transaction();
+
+    try {
+        // Deduct from User
+        $conn->query("UPDATE accounts SET balance = balance - $amount WHERE name='User'");
+
+        // Check if balance is negative
+        $check = $conn->query("SELECT balance FROM accounts WHERE name='User'");
+        $row = $check->fetch_assoc();
+
+        if ($row['balance'] < 0) {
+            throw new Exception("Insufficient Balance!");
+        }
+
+        // Add to Merchant
+        $conn->query("UPDATE accounts SET balance = balance + $amount WHERE name='Merchant'");
+
+        // Commit transaction
+        $conn->commit();
+        $message = "Payment Successful!";
+
+    } catch (Exception $e) {
+        // Rollback transaction
+        $conn->rollback();
+        $message = "Transaction Failed: " . $e->getMessage();
+    }
+}
+
+// Fetch balances
+$user = $conn->query("SELECT balance FROM accounts WHERE name='User'")->fetch_assoc();
+$merchant = $conn->query("SELECT balance FROM accounts WHERE name='Merchant'")->fetch_assoc();
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Simulation</title>
+    <style>
+        body { font-family: Arial; background: #f2f2f2; text-align: center; }
+        .box {
+            background: white;
+            width: 300px;
+            margin: auto;
+            padding: 20px;
+            margin-top: 50px;
+            border-radius: 10px;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .msg { font-weight: bold; }
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>Payment System</h2>
+
+    <p>User Balance: ₹<?= $user['balance'] ?></p>
+    <p>Merchant Balance: ₹<?= $merchant['balance'] ?></p>
+
+    <form method="POST">
+        <input type="number" name="amount" placeholder="Enter Amount" required>
+        <button type="submit" name="pay">Pay</button>
+    </form>
+
+    <p class="msg"><?= $message ?></p>
+</div>
+
+</body>
+</html>
+
+<?php $conn->close(); ?>
