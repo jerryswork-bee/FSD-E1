@@ -1,0 +1,66 @@
+package com.example;
+
+import org.springframework.context.annotation.*;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+
+import org.springframework.web.WebApplicationInitializer;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
+
+class Employee {
+    private int id;
+    private String name;
+    private String dept;
+
+    public Employee(int id, String name, String dept) {
+        this.id = id;
+        this.name = name;
+        this.dept = dept;
+    }
+
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public String getDept() { return dept; }
+}
+
+@Controller
+class EmployeeController {
+
+    @RequestMapping("/employee")
+    public String getEmployee(Model model) {
+        Employee emp = new Employee(1, "John", "IT");
+        model.addAttribute("emp", emp);
+        return "employee"; // View name
+    }
+}
+
+@Configuration
+@EnableWebMvc
+@ComponentScan("com.example")
+class AppConfig {}
+
+
+public class MainApp implements WebApplicationInitializer {
+
+    @Override
+    public void onStartup(ServletContext sc) throws ServletException {
+
+        AnnotationConfigWebApplicationContext context =
+                new AnnotationConfigWebApplicationContext();
+
+        context.register(AppConfig.class);
+
+        ServletRegistration.Dynamic servlet =
+                sc.addServlet("dispatcher",
+                        new DispatcherServlet(context));
+
+        servlet.setLoadOnStartup(1);
+        servlet.addMapping("/");
+    }
+}
