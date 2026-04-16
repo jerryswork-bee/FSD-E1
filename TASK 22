@@ -1,0 +1,97 @@
+
+
+cloud_providers = {
+
+    "AWS": {
+        "Compute": {
+            "VM": "EC2",
+            "Serverless": "Lambda",
+            "Containers": "ECS / EKS"
+        },
+        "Storage": {
+            "Object": "S3",
+            "Block": "EBS",
+            "File": "EFS"
+        },
+        "Database": {
+            "Relational": "RDS",
+            "NoSQL": "DynamoDB",
+            "DataWarehouse": "Redshift"
+        },
+        "Networking": {
+            "VirtualNetwork": "VPC",
+            "LoadBalancer": "ELB",
+            "CDN": "CloudFront",
+            "DNS": "Route 53"
+        },
+        "PricingModel": "Pay-as-you-use (per second / storage / request)"
+    },
+
+
+    "GCP": {
+        "Compute": {
+            "VM": "Compute Engine",
+            "Serverless": "Cloud Functions",
+            "Containers": "GKE (Kubernetes Engine)"
+        },
+        "Storage": {
+            "Object": "Cloud Storage",
+            "Block": "Persistent Disk",
+            "File": "Filestore"
+        },
+        "Database": {
+            "Relational": "Cloud SQL",
+            "NoSQL": "Firestore / Bigtable",
+            "DataWarehouse": "BigQuery"
+        },
+        "Networking": {
+            "VirtualNetwork": "VPC Network",
+            "LoadBalancer": "Cloud Load Balancing",
+            "CDN": "Cloud CDN",
+            "DNS": "Cloud DNS"
+        },
+        "PricingModel": "Pay-as-you-use (per second billing)"
+    },
+
+
+    "Azure": {
+        "Compute": {
+            "VM": "Azure Virtual Machines",
+            "Serverless": "Azure Functions",
+            "Containers": "AKS (Azure Kubernetes Service)"
+        },
+        "Storage": {
+            "Object": "Blob Storage",
+            "Block": "Managed Disks",
+            "File": "Azure Files"
+        },
+        "Database": {
+            "Relational": "Azure SQL Database",
+            "NoSQL": "Cosmos DB",
+            "DataWarehouse": "Synapse Analytics"
+        },
+        "Networking": {
+            "VirtualNetwork": "Azure VNet",
+            "LoadBalancer": "Azure Load Balancer",
+            "CDN": "Azure CDN",
+            "DNS": "Azure DNS"
+        },
+        "PricingModel": "Pay-as-you-use (per minute / per request / storage)"
+    }
+}
+
+
+
+for provider, services in cloud_providers.items():
+    print("\n==============================")
+    print("CLOUD PROVIDER:", provider)
+    print("==============================")
+
+    for category, details in services.items():
+        print("\n", category)
+
+        if isinstance(details, dict):
+            for k, v in details.items():
+                print("   ", k, ":", v)
+        else:
+            print("   ", details)
