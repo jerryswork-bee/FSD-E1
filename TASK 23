@@ -1,0 +1,182 @@
+
+Vibe Coding = Writing high-level natural language prompts
+to generate working code using Generative AI.
+
+Goal:
+- Describe "what you want", not "how to code it"
+- AI handles implementation details
+
+
+
+Techniques used:
+
+1. Role Prompting
+2. Context Setting
+3. Constraints Definition
+4. Output Format Specification
+5. Example-driven prompting (Few-shot)
+6. Iterative refinement
+
+
+
+PROMPT:
+"You are a senior Java Spring Boot developer.
+Create a REST microservice for user management with:
+- GET /users/{id}
+- POST /users
+- Use in-memory storage
+- Include exception handling
+Return clean production-ready code."
+
+
+
+GENERATED OUTPUT (AI RESULT):
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    private Map<Integer, String> db = new HashMap<>();
+
+    @GetMapping("/{id}")
+    public ResponseEntity<String> getUser(@PathVariable int id) {
+        if (!db.containsKey(id)) {
+            throw new RuntimeException("User not found");
+        }
+        return ResponseEntity.ok(db.get(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<String> createUser(@RequestBody String user) {
+        int id = db.size() + 1;
+        db.put(id, user);
+        return ResponseEntity.ok("User created with ID: " + id);
+    }
+}
+
+
+
+EVALUATION:
+✔ Correct REST structure
+✔ Works for prototype
+✔ Missing database layer (limitation)
+✔ Good for MVP development
+
+
+
+PROMPT:
+"Generate Terraform script to create an AWS EC2 instance
+with security group allowing HTTP and SSH access."
+
+
+GENERATED OUTPUT:
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "app_server" {
+  ami           = "ami-123456"
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "VibeAppServer"
+  }
+}
+
+resource "aws_security_group" "allow_web" {
+  name = "allow_web"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+
+EVALUATION:
+✔ Valid Terraform structure
+✔ Correct security rules
+✔ Needs AMI validation for production
+✔ Ready for cloud deployment baseline
+
+
+
+
+PROMPT:
+"Design SQL schema for an e-commerce system with users,
+products, and orders including relationships."
+
+
+
+GENERATED OUTPUT:
+
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100)
+);
+
+CREATE TABLE Products (
+    product_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    price DECIMAL(10,2)
+);
+
+CREATE TABLE Orders (
+    order_id INT PRIMARY KEY,
+    user_id INT,
+    product_id INT,
+    quantity INT,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (product_id) REFERENCES Products(product_id)
+);
+
+
+
+EVALUATION:
+✔ Proper relational structure
+✔ Foreign keys included
+✔ Missing indexing optimization (improvement area)
+✔ Good for basic systems
+
+
+QUALITY FACTORS:
+
+1. Correctness → High
+2. Scalability → Medium
+3. Security → Needs improvement
+4. Production readiness → Partial
+5. Time efficiency → Very high (major advantage)
+
+BUSINESS IMPACT:
+✔ Faster development cycles
+✔ Reduced coding effort
+✔ Rapid prototyping
+✔ Useful for startups & MVPs
+
+LIMITATIONS:
+✖ Needs human validation
+✖ May miss edge cases
+✖ Security hardening required
+
+
+Vibe Coding + Prompt Engineering enables:
+
+- Faster software development
+- Cloud automation generation
+- Microservice scaffolding
+- SQL + API + infrastructure generation
+
+BUT:
+Human review is required before production use.
