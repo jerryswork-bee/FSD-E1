@@ -1,0 +1,72 @@
+package com.example;
+
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import org.springframework.core.io.ClassPathResource;
+
+import java.util.ArrayList;
+import java.util.List;
+
+class Employee {
+    private int id;
+    private String name;
+    private String department;
+
+    public Employee(int id, String name, String department) {
+        this.id = id;
+        this.name = name;
+        this.department = department;
+    }
+
+    public String toString() {
+        return id + " " + name + " " + department;
+    }
+}
+@Component
+class EmployeeService {
+
+    private List<Employee> employees = new ArrayList<>();
+
+    public void addEmployee(Employee emp) {
+        employees.add(emp);
+    }
+
+    public void displayEmployees() {
+        for (Employee e : employees) {
+            System.out.println(e);
+        }
+    }
+}
+
+@Component
+class EmployeeController {
+
+    @Autowired
+    private EmployeeService service;
+
+    public void run() {
+        service.addEmployee(new Employee(1, "John", "IT"));
+        service.addEmployee(new Employee(2, "Alice", "HR"));
+        service.displayEmployees();
+    }
+}
+@Configuration
+@ComponentScan(basePackages = "com.example")
+class AppConfig {}
+
+public class MainApp {
+    public static void main(String[] args) {
+
+        BeanFactory factory = new XmlBeanFactory(
+                new ClassPathResource("applicationContext.xml"));
+
+        EmployeeController controller =
+                (EmployeeController) factory.getBean("employeeController");
+
+        controller.run();
+    }
+}
