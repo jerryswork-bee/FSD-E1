@@ -1,0 +1,53 @@
+
+mkdir sample-microservice-project
+cd sample-microservice-project
+
+git init
+
+
+echo "# Sample Microservice Project" > README.md
+
+mkdir src
+cd src
+echo "public class App { public static void main(String[] args){ System.out.println(\"Hello Microservices\"); } }" > App.java
+cd ..
+
+
+
+git status
+
+
+git add README.md src/App.java
+
+git commit -m "Initial commit - added project structure and sample code"
+
+
+echo "Updated project with Git basics" >> README.md
+
+
+git add README.md
+git commit -m "Updated README with Git learning notes"
+
+git log --oneline
+
+# (Do this on GitHub website)
+# Repository name: sample-microservice-project
+
+
+git remote add origin https://github.com/your-username/sample-microservice-project.git
+
+
+git branch -M main
+git push -u origin main
+
+
+# After making changes again:
+
+git add .
+git commit -m "Added new feature or fix"
+git push origin main
+
+
+# To simulate remote usage:
+
+git clone https://github.com/your-username/sample-microservice-project.git
