@@ -1,0 +1,103 @@
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import org.springframework.http.*;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+
+import java.util.*;
+
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+
+@Entity
+@Table(name = "products")
+class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @NotBlank(message = "Product name cannot be empty")
+    private String name;
+
+    @Positive(message = "Price must be greater than 0")
+    private double price;
+
+    public Product() {}
+
+    public Product(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+  
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public double getPrice() { return price; }
+
+    public void setName(String name) { this.name = name; }
+    public void setPrice(double price) { this.price = price; }
+}
+
+interface ProductRepository extends JpaRepository<Product, Integer> {}
+
+@RestController
+@RequestMapping("/products")
+class ProductController {
+
+    @Autowired
+    private ProductRepository repo;
+
+
+    @PostMapping
+    public Product create(@RequestBody @Valid Product p) {
+        return repo.save(p);
+    }
+
+    // GET
+    @GetMapping("/{id}")
+    public Product get(@PathVariable int id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+    }
+}
+
+@ControllerAdvice
+class GlobalExceptionHandler {
+
+ 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidation(
+            MethodArgumentNotValidException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors()
+                .forEach(error ->
+                        errors.put(error.getField(), error.getDefaultMessage()));
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+   
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>> handleRuntime(RuntimeException ex) {
+
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+}
