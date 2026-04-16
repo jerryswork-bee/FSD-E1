@@ -1,0 +1,116 @@
+
+package com.example.servicea;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.*;
+
+@SpringBootApplication
+@RestController
+@RequestMapping("/api/provider")
+public class ServiceAApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ServiceAApplication.class, args);
+    }
+
+
+    @GetMapping("/data/{id}")
+    public String getData(@PathVariable int id) {
+
+        if (id <= 0) {
+            throw new RuntimeException("Invalid ID provided");
+        }
+
+        return "DATA_FROM_SERVICE_A for ID: " + id;
+    }
+}
+
+
+
+/*
+server:
+  port: 8081
+
+spring:
+  application:
+    name: service-a
+*/
+
+
+package com.example.servicea;
+
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+
+@ControllerAdvice
+class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleException(RuntimeException ex) {
+        return new ResponseEntity<>("SERVICE A ERROR: " + ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+}
+
+
+package com.example.serviceb;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+@SpringBootApplication
+@RestController
+@RequestMapping("/api/consumer")
+public class ServiceBApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ServiceBApplication.class, args);
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+
+    private final RestTemplate restTemplate;
+
+    public ServiceBApplication(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    @GetMapping("/fetch/{id}")
+    public String fetchFromServiceA(@PathVariable int id) {
+
+        String url = "http://localhost:8081/api/provider/data/" + id;
+
+        try {
+            String response = restTemplate.getForObject(url, String.class);
+            return "SERVICE B received → " + response;
+        }
+
+        catch (Exception e) {
+            return fallbackResponse(id, e.getMessage());
+        }
+    }
+
+
+    public String fallbackResponse(int id, String error) {
+        return "SERVICE B FALLBACK RESPONSE → Service A unavailable for ID "
+                + id + " | Error: " + error;
+    }
+}
+
+
+
+/*
+server:
+  port: 8082
+
+spring:
+  application:
+    name: service-b
+*/
