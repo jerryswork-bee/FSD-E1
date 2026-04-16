@@ -1,0 +1,160 @@
+
+package com.example.user;
+
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/user")
+public class UserController {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/{id}")
+    public String getUser(@PathVariable int id) {
+        return userService.getUserById(id);
+    }
+}
+
+package com.example.user;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public String getUserById(int id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("Invalid ID");
+        }
+        return userRepository.findUser(id);
+    }
+}
+
+
+package com.example.user;
+
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class UserRepository {
+
+    public String findUser(int id) {
+        return "USER_" + id;
+    }
+}
+
+package com.example.user;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+    @Mock
+    UserRepository userRepository;
+
+    @InjectMocks
+    UserService userService;
+
+    @Test
+    void testGetUserById_Valid() {
+        when(userRepository.findUser(1)).thenReturn("USER_1");
+
+        String result = userService.getUserById(1);
+
+        assertEquals("USER_1", result);
+    }
+
+    @Test
+    void testGetUserById_Invalid() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            userService.getUserById(0);
+        });
+
+        assertEquals("Invalid ID", exception.getMessage());
+    }
+}
+
+
+package com.example.user;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.Mockito.*;
+
+@WebMvcTest(UserController.class)
+class UserControllerTest {
+
+    @Autowired
+    MockMvc mockMvc;
+
+    @MockBean
+    UserService userService;
+
+    @Test
+    void testGetUserEndpoint() throws Exception {
+
+        when(userService.getUserById(1)).thenReturn("USER_1");
+
+        mockMvc.perform(get("/api/user/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("USER_1"));
+    }
+
+    @Test
+    void testGetUserEndpoint_Failure() throws Exception {
+
+        when(userService.getUserById(1))
+                .thenThrow(new RuntimeException("Service failure"));
+
+        mockMvc.perform(get("/api/user/1"))
+                .andExpect(status().is5xxServerError());
+    }
+}
+
+
+
+package com.example.user;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class UserIntegrationTest {
+
+    @Autowired
+    UserService userService;
+
+    @Test
+    void testFullFlow() {
+        String result = userService.getUserById(2);
+        assertThat(result).isEqualTo("USER_2");
+    }
+}
