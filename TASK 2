@@ -1,0 +1,112 @@
+<?php
+$conn = new mysqli("localhost", "root", "", "student_db");
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Sorting
+$order = "";
+if (isset($_GET['sort'])) {
+    if ($_GET['sort'] == "name") {
+        $order = "ORDER BY name ASC";
+    } elseif ($_GET['sort'] == "dob") {
+        $order = "ORDER BY dob ASC";
+    }
+}
+
+// Filtering
+$where = "";
+if (isset($_GET['department']) && $_GET['department'] != "") {
+    $dept = $_GET['department'];
+    $where = "WHERE department='$dept'";
+}
+
+// Fetch Data
+$result = $conn->query("SELECT * FROM students $where $order");
+
+// Count per department
+$countResult = $conn->query("SELECT department, COUNT(*) as total FROM students GROUP BY department");
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+    <style>
+        body { font-family: Arial; background: #f2f2f2; }
+        .container { width: 90%; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table, th, td { border: 1px solid black; padding: 8px; text-align: center; }
+        select, button { padding: 8px; margin: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Student Dashboard</h2>
+
+    <!-- Filter & Sort Form -->
+    <form method="GET">
+        <label>Filter by Department:</label>
+        <select name="department">
+            <option value="">All</option>
+            <option value="CSE">CSE</option>
+            <option value="ECE">ECE</option>
+            <option value="IT">IT</option>
+            <option value="MECH">MECH</option>
+        </select>
+
+        <label>Sort by:</label>
+        <select name="sort">
+            <option value="">None</option>
+            <option value="name">Name</option>
+            <option value="dob">Date of Birth</option>
+        </select>
+
+        <button type="submit">Apply</button>
+    </form>
+
+    <!-- Student Table -->
+    <table>
+        <tr>
+            <th>ID</th><th>Name</th><th>Email</th><th>DOB</th><th>Department</th><th>Phone</th>
+        </tr>
+
+        <?php
+        while($row = $result->fetch_assoc()) {
+            echo "<tr>
+                <td>{$row['id']}</td>
+                <td>{$row['name']}</td>
+                <td>{$row['email']}</td>
+                <td>{$row['dob']}</td>
+                <td>{$row['department']}</td>
+                <td>{$row['phone']}</td>
+            </tr>";
+        }
+        ?>
+    </table>
+
+    <!-- Count per Department -->
+    <h3>Student Count by Department</h3>
+    <table>
+        <tr>
+            <th>Department</th><th>Total Students</th>
+        </tr>
+
+        <?php
+        while($row = $countResult->fetch_assoc()) {
+            echo "<tr>
+                <td>{$row['department']}</td>
+                <td>{$row['total']}</td>
+            </tr>";
+        }
+        ?>
+    </table>
+
+</div>
+
+</body>
+</html>
+
+<?php $conn->close(); ?>
